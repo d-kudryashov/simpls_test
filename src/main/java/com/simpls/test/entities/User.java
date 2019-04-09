@@ -18,13 +18,12 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @NotNull
-    private int id;
+    private Integer id;
 
     @Column
     @NotNull
     private String fullName;
 
     @Column
-    private int salary;
+    private Integer salary;
 }

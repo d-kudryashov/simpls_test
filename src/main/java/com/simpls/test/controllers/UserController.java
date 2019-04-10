@@ -2,8 +2,8 @@ package com.simpls.test.controllers;
 
 import com.simpls.test.entities.User;
 import com.simpls.test.repositories.UserRepository;
+import com.simpls.test.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,10 +17,12 @@ import java.util.Optional;
 @RequestMapping("/user")
 public class UserController {
     private final UserRepository userRepository;
+    private final UserService userService;
 
     @Autowired
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, UserService userService) {
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @PutMapping("/")
@@ -79,9 +81,10 @@ public class UserController {
     @DeleteMapping("{id}")
     @ResponseBody
     public ResponseEntity deleteUser(@PathVariable int id) {
-        try {
+        if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
-        } catch (EmptyResultDataAccessException e) {
+            userService.increaseDeletedUserCount();
+        } else {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .build();
@@ -89,5 +92,12 @@ public class UserController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .build();
+    }
+
+    @GetMapping("/deletedUsersCount")
+    public ResponseEntity getDeletedUsersCount() {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(userService.getDeletedUsersCount());
     }
 }
